@@ -1,0 +1,10 @@
+{
+  "name": "want-a-sprite",
+  "id": "1117974112516976589",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": [
+    "figma"
+  ],
+  "ui": "ui.html"
+}

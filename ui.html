@@ -1,0 +1,248 @@
+<div class="layout">
+    <div class="layout-body">
+        <div class="form-label label-1">Target Method</div>
+        <div class="choice-group">
+            <div class="choice" id="choice-1" onclick="selectChoice('choice-1')">By Key</div>
+            <div class="choice" id="choice-2" onclick="selectChoice('choice-2')">By Selection</div>
+        </div>
+        <input class="input" placeholder="e.g. <icons>" oninput="test(event)">
+
+        <div class="form-label label-2">Exported SVG Element</div>
+        <textarea placeholder="SVG string" class="svg-textarea" id="svg-text"></textarea>
+        <!-- <button class="button button--outlined size-1of1" disabled>Download</button> -->
+    </div>
+    <div class="layout-footer">
+        <button class="button button-run" id="run">Run</button>
+    </div>
+</div>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+    body {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 300;
+        margin: 0;
+    }
+
+    .layout {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .layout-body {
+        padding: 1rem;
+    }
+
+    .layout-footer {
+        padding: 1rem;
+        margin-top: 1.3rem;
+        border-top: 1px solid lightgray;
+    }
+
+    .input {
+        border: 1.5px solid black;
+        font-size: 13px;
+        font-weight: 300;
+        padding: 10px 12px;
+        outline: none;
+        border-radius: 3px;
+        width: 100%;
+        display: none
+    }
+
+    .input--visible {
+        display: block;
+    }
+
+    .input::placeholder,
+    .svg-textarea::placeholder {
+        color: #CCCCCC;
+        font-weight: 200;
+    }
+
+    .size-1of1 {
+        width: 100%;
+    }
+
+    .button-group {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .button-copy {
+        margin-right: 0.5rem;
+    }
+
+    .svg-textarea {
+        width: 100%;
+        height: 5rem;
+        border: 1.5px solid black;
+        border-radius: 3px;
+        outline: none;
+        margin-bottom: 6px;
+        padding: 12px;
+        font-family: 'Inter', sans-serif;
+        resize: vertical;
+    }
+
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 12px;
+    }
+
+    .label-2 {
+        margin-top: 1.5rem;
+    }
+
+    .button {
+        background-color: black;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 3px;
+        font-size: 13px;
+        outline: none;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .button--outlined {
+        border: 1.5px solid black;
+        background-color: white;
+        color: black;
+    }
+
+    .button--outlined:hover {
+        background-color: black;
+        color: white;
+    }
+
+    .button-run {
+        width: 100%;
+    }
+
+    .choice-group {
+        border: 1.5px solid black;
+        color: black;
+        border-radius: 3px;
+        font-weight: 400;
+        width: max-content;
+        margin-bottom: 6px;
+        display: flex;
+    }
+
+    .choice {
+        background-color: white;
+        color: black;
+        padding: 10px 16px;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .choice:first-of-type {
+        border-top-left-radius: 2px;
+        border-bottom-left-radius: 2px;
+    }
+
+    .choice:last-of-type {
+        border-top-right-radius: 2px;
+        border-bottom-right-radius: 2px;
+    }
+
+    .choice:not(.choice--active):hover {
+        background-color: lightgray;
+    }
+
+    .choice--active {
+        background-color: black;
+        color: white;
+    }
+</style>
+
+<script>
+const textDecoder = new TextDecoder('utf-8');
+const domParser  = new DOMParser();
+const key = 'svg';
+const svgNodeElements = [];
+
+let identifier = '';
+
+document.getElementById('run').onclick = () => {
+    parent.postMessage({ pluginMessage: { event: 'run-export' , identifier } }, '*')
+}
+
+function test(event) {
+    identifier = event.srcElement.value;
+}
+
+function selectChoice(choiceId) {
+    const choices = document.querySelectorAll('.choice');
+    const selectedElement = document.getElementById(`${choiceId}`);
+    const keyInput = document.querySelector('.input');
+
+    choices.forEach(choice => choice.classList.remove('choice--active'));
+    selectedElement.classList.add('choice--active');
+    keyInput.classList.remove('input--visible');
+
+    if (choiceId === 'choice-1') {
+        keyInput.classList.add('input--visible');
+    }
+}
+
+selectChoice('choice-1');
+
+function prepSpriteElement(encodedSvg, name) {
+    const decodedText = textDecoder.decode(encodedSvg).replace(/[\n\t]/g, "");
+    const splitNode = decodedText.split('><');
+    const targetNodeIndex = splitNode.findIndex(item => item.includes(key));
+
+    const filteredNode = [...splitNode].filter((item, index) =>
+        index > targetNodeIndex
+        && index < (splitNode.length - (targetNodeIndex + 1))
+    ).map(item => {
+        const nodeString = `<${item}>`;
+
+        if (!nodeString.includes('<path')) {
+            return nodeString;
+        }
+
+        const domEl = domParser.parseFromString(nodeString, "image/svg+xml").documentElement;
+
+        domEl.setAttribute('fill', 'currentcolor');
+
+        return domEl.outerHTML;
+    });
+
+    const symbolName = name.replace(identifier, '');
+
+    svgNodeElements.push(`<symbol id="${symbolName}" viewBox="0 0 24 24">${filteredNode.join('')}</symbol>`);
+}
+
+function sendSprite() {
+    const svg = [
+        '<svg aria-hidden="true" style="position:absolute;width:0;height:0" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" overflow="hidden"><defs>',
+        ...svgNodeElements,
+        '</defs></svg>'
+    ].join('');
+
+    document.getElementById('svg-text').innerHTML = svgNodeElements.length === 0 ? 'Error' : svg;
+}
+
+onmessage = ({ data }) => {
+    const messageData = data.pluginMessage;
+
+    if (messageData.event === 'prep-sprite-el') {
+        prepSpriteElement(messageData.encodedSvg, messageData.name);
+    }
+
+    if (messageData.event === 'send-sprite') {
+        sendSprite();
+    }
+}
+
+</script>
