@@ -1,168 +1,31 @@
-<div class="layout">
-    <div class="layout-body">
-        <div class="form-label label-1">Target Method</div>
-        <div class="choice-group">
-            <div class="choice" id="choice-1" onclick="selectChoice('choice-1')">By Key</div>
-            <div class="choice" id="choice-2" onclick="selectChoice('choice-2')">By Selection</div>
+<div class="was-plugin layout--column layout--justify height--stretch">
+    <div class="was-plugin__body height--stretch">
+        <div class="margin__bottom--100">
+            <div class="form-label">Target Method</div>
+            <div class="width--stretch layout--row layout--justify margin__bottom--25">
+                <button class="choice target-choice width--stretch margin__right--25" id="target-key" onclick="selectTargetMethod('target-key')">Key</button>
+                <button class="choice target-choice width--stretch" id="target-selection" onclick="selectTargetMethod('target-selection')">Selection</button>
+            </div>
+            <input class="input key-input width--stretch" placeholder="e.g. <icons>" oninput="updateTargetKey(event)">
         </div>
-        <input class="input" placeholder="e.g. <icons>" oninput="test(event)">
+        <div class="margin__bottom--100">
+            <div class="form-label">Icon Colour</div>
+            <div class="width--stretch layout--row layout--justify margin__bottom--25">
+                <button class="choice colour-choice width--stretch margin__right--25" id="colour-inherit" onclick="selectColour('colour-inherit')">Inherit</button>
+                <button class="choice colour-choice width--stretch margin__right--25" id="colour-hex" onclick="selectColour('colour-hex')">Hex</button>
+                <button class="choice colour-choice width--stretch" id="colour-rgba" onclick="selectColour('colour-rgba')">Rgba</button>
+            </div>
+            <input class="input hex-input width--stretch" placeholder="e.g. #333333" oninput="updateColour(event)">
+            <input class="input rgba-input width--stretch" placeholder="e.g. rgab(0, 0, 0, 0.5)" oninput="updateColour(event)">
+        </div>
 
-        <div class="form-label label-2">Exported SVG Element</div>
-        <textarea placeholder="SVG string" class="svg-textarea" id="svg-text"></textarea>
-        <!-- <button class="button button--outlined size-1of1" disabled>Download</button> -->
+        <div class="form-label">Exported SVG Element</div>
+        <textarea placeholder="SVG string" class="textarea width--stretch" id="svg-text"></textarea>
     </div>
-    <div class="layout-footer">
-        <button class="button button-run" id="run">Run</button>
+    <div class="was-plugin__footer">
+        <button class="button width--stretch" id="run">Run</button>
     </div>
 </div>
-
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
-
-    body {
-        font-family: 'Inter', sans-serif;
-        font-size: 13px;
-        font-weight: 300;
-        margin: 0;
-    }
-
-    .layout {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .layout-body {
-        padding: 1rem;
-    }
-
-    .layout-footer {
-        padding: 1rem;
-        margin-top: 1.3rem;
-        border-top: 1px solid lightgray;
-    }
-
-    .input {
-        border: 1.5px solid black;
-        font-size: 13px;
-        font-weight: 300;
-        padding: 10px 12px;
-        outline: none;
-        border-radius: 3px;
-        width: 100%;
-        display: none
-    }
-
-    .input--visible {
-        display: block;
-    }
-
-    .input::placeholder,
-    .svg-textarea::placeholder {
-        color: #CCCCCC;
-        font-weight: 200;
-    }
-
-    .size-1of1 {
-        width: 100%;
-    }
-
-    .button-group {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-    }
-
-    .button-copy {
-        margin-right: 0.5rem;
-    }
-
-    .svg-textarea {
-        width: 100%;
-        height: 5rem;
-        border: 1.5px solid black;
-        border-radius: 3px;
-        outline: none;
-        margin-bottom: 6px;
-        padding: 12px;
-        font-family: 'Inter', sans-serif;
-        resize: vertical;
-    }
-
-    .form-label {
-        font-weight: 500;
-        margin-bottom: 12px;
-    }
-
-    .label-2 {
-        margin-top: 1.5rem;
-    }
-
-    .button {
-        background-color: black;
-        color: white;
-        padding: 12px 16px;
-        border-radius: 3px;
-        font-size: 13px;
-        outline: none;
-        border: none;
-        font-weight: 500;
-        cursor: pointer;
-    }
-
-    .button--outlined {
-        border: 1.5px solid black;
-        background-color: white;
-        color: black;
-    }
-
-    .button--outlined:hover {
-        background-color: black;
-        color: white;
-    }
-
-    .button-run {
-        width: 100%;
-    }
-
-    .choice-group {
-        border: 1.5px solid black;
-        color: black;
-        border-radius: 3px;
-        font-weight: 400;
-        width: max-content;
-        margin-bottom: 6px;
-        display: flex;
-    }
-
-    .choice {
-        background-color: white;
-        color: black;
-        padding: 10px 16px;
-        display: inline-block;
-        cursor: pointer;
-    }
-
-    .choice:first-of-type {
-        border-top-left-radius: 2px;
-        border-bottom-left-radius: 2px;
-    }
-
-    .choice:last-of-type {
-        border-top-right-radius: 2px;
-        border-bottom-right-radius: 2px;
-    }
-
-    .choice:not(.choice--active):hover {
-        background-color: lightgray;
-    }
-
-    .choice--active {
-        background-color: black;
-        color: white;
-    }
-</style>
 
 <script>
 const textDecoder = new TextDecoder('utf-8');
@@ -170,31 +33,70 @@ const domParser  = new DOMParser();
 const key = 'svg';
 const svgNodeElements = [];
 
-let identifier = '';
+let identifierKey = '';
+let colour = 'currentcolor';
 
-document.getElementById('run').onclick = () => {
-    parent.postMessage({ pluginMessage: { event: 'run-export' , identifier } }, '*')
+const runButton = document.getElementById('run')
+
+runButton.onclick = () => {
+    runButton.innerHTML = 'Loading...';
+    parent.postMessage({
+        pluginMessage: {
+            event: 'run-export',
+            identifierKey,
+            colour
+        }
+    }, '*');
 }
 
-function test(event) {
-    identifier = event.srcElement.value;
+function updateTargetKey(event) {
+    identifierKey = event.srcElement.value;
 }
 
-function selectChoice(choiceId) {
-    const choices = document.querySelectorAll('.choice');
-    const selectedElement = document.getElementById(`${choiceId}`);
-    const keyInput = document.querySelector('.input');
+function updateColour(event) {
+    colour = event.srcElement.value;
+}
+
+function selectTargetMethod(targetId) {
+    const choices = document.querySelectorAll('.target-choice');
+    const selectedElement = document.getElementById(`${targetId}`);
+    const keyInput = document.querySelector('.key-input');
 
     choices.forEach(choice => choice.classList.remove('choice--active'));
     selectedElement.classList.add('choice--active');
-    keyInput.classList.remove('input--visible');
 
-    if (choiceId === 'choice-1') {
-        keyInput.classList.add('input--visible');
-    }
+    targetId === 'target-key'
+        ? keyInput.classList.add('visibility--visible')
+        : keyInput.classList.remove('visibility--visible');
 }
 
-selectChoice('choice-1');
+function selectColour(colourId) {
+    const choices = document.querySelectorAll('.colour-choice');
+    const selectedElement = document.getElementById(`${colourId}`);
+    const hexInput = document.querySelector('.hex-input');
+    const rgbaInput = document.querySelector('.rgba-input');
+
+    choices.forEach(choice => choice.classList.remove('choice--active'));
+    selectedElement.classList.add('choice--active');
+
+    if (colourId === 'colour-hex') {
+        colour = '';
+        rgbaInput.classList.remove('visibility--visible');
+        hexInput.classList.add('visibility--visible');
+        return;
+    }
+
+    if (colourId === 'colour-rgba') {
+        colour = '';
+        hexInput.classList.remove('visibility--visible');
+        rgbaInput.classList.add('visibility--visible');
+        return;
+    }
+
+    colour = 'currentcolor';
+    rgbaInput.classList.remove('visibility--visible');
+    hexInput.classList.remove('visibility--visible');
+}
 
 function prepSpriteElement(encodedSvg, name) {
     const decodedText = textDecoder.decode(encodedSvg).replace(/[\n\t]/g, "");
@@ -213,25 +115,42 @@ function prepSpriteElement(encodedSvg, name) {
 
         const domEl = domParser.parseFromString(nodeString, "image/svg+xml").documentElement;
 
-        domEl.setAttribute('fill', 'currentcolor');
+        if (!!domEl.getAttribute('fill')) {
+            domEl.setAttribute('fill', colour);
+        }
+
+        if (!!domEl.getAttribute('fill')) {
+            domEl.setAttribute('stroke', colour);
+        }
 
         return domEl.outerHTML;
     });
 
-    const symbolName = name.replace(identifier, '');
+    const symbolName = name.replace(identifierKey, '').replace(' ', '');
 
     svgNodeElements.push(`<symbol id="${symbolName}" viewBox="0 0 24 24">${filteredNode.join('')}</symbol>`);
 }
 
 function sendSprite() {
+    const svgEl = document.getElementById('svg-text');
+
     const svg = [
         '<svg aria-hidden="true" style="position:absolute;width:0;height:0" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" overflow="hidden"><defs>',
         ...svgNodeElements,
         '</defs></svg>'
     ].join('');
 
-    document.getElementById('svg-text').innerHTML = svgNodeElements.length === 0 ? 'Error' : svg;
+    // console.log(svgEl, svgEl.innerHTML, svg)
+    setTimeout(() => {
+        console.log('run')
+        svgEl.value = svgNodeElements.length === 0 ? 'Error' : svg;
+        runButton.innerHTML = 'Run';
+    }, 200);
+
 }
+
+selectTargetMethod('target-key');
+selectColour('colour-inherit');
 
 onmessage = ({ data }) => {
     const messageData = data.pluginMessage;
@@ -246,3 +165,168 @@ onmessage = ({ data }) => {
 }
 
 </script>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+
+    :root {
+        --font__family: 'Inter', sans-serif;
+        --font__size: 13px;
+        --font__weight: 300;
+        --font__weight--medium: 400;
+        --fond__weight--heavy: 500;
+
+        --spacing__25: 0.25rem;
+        --spacing__60: 0.6rem;
+        --spacing__75: 0.75rem;
+        --spacing__100: 1rem;
+        --spacing__125: 1.25rem;
+
+        --border__radius: 6px;
+        --border__weight: 1px;
+        --border__colour: black;
+        --border__colour--light: #E6E6E6;
+
+        --colour--primary: black;
+        --colour--secondary: white;
+        --colour--placeholder: #CCCCCC;
+    }
+
+    body,
+    .input,
+    .button,
+    .textarea,
+    .choice {
+        font-family: var(--font__family);
+        font-size: var(--font__size);
+        font-weight: var(--font__weight);
+        margin: 0;
+    }
+
+    .was-plugin__body,
+    .was-plugin__footer {
+        padding: var(--spacing__100);
+    }
+
+    .was-plugin__footer {
+        border-top: var(--border__weight) solid var(--border__colour--light);
+    }
+
+    .height--stretch {
+        height: 100%;
+    }
+
+    .width--stretch {
+        width: 100%;
+    }
+
+    .layout--column {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .layout--row {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .layout--justify {
+        justify-content: space-between;
+    }
+
+    .layout-body {
+        padding: var(--spacing__);
+    }
+
+    .layout-footer {
+        padding: var(--spacing__100);
+        border-top: var(----border__weight) solid var(--colour--placeholder);
+    }
+
+    .visibility--hidden {
+        display: none !important;
+    }
+
+    .visibility--visible {
+        display: block !important;
+    }
+
+    .margin__right--25 {
+        margin-right: var(--spacing__25);
+    }
+
+    .margin__bottom--25 {
+        margin-bottom: var(--spacing__25);
+    }
+
+    .margin__bottom--100 {
+        margin-bottom: var(--spacing__100);
+    }
+
+    .input {
+        border: var(--border__weight) solid var(--colour--primary);
+        padding: var(--spacing__60);
+        border-radius: var(--border__radius);
+        outline: none;
+        display: none
+    }
+
+    .textarea {
+        height: 5.5rem;
+        max-height: 8rem;
+        border: var(--border__weight) solid var(--colour--primary);
+        border-radius: var(--border__radius);
+        padding: var(--spacing__75);
+        outline: none;
+        resize: vertical;
+    }
+
+    .input::placeholder,
+    .textarea::placeholder {
+        color: var(--colour--placeholder);
+    }
+
+    .form-label {
+        font-weight: var(--fond__weight--heavy);
+        margin-bottom: var(--spacing__75);
+    }
+
+    .button {
+        background-color: var(--colour--primary);
+        color: var(--colour--secondary);
+        padding: var(--spacing__60) var(--spacing__75);
+        border-radius: var(--border__radius);
+        outline: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .button--outlined {
+        border: var(--border__weight) solid var(--border__colour);
+        background-color: var(--colour--secondary);
+        color: var(--colour--primary);
+    }
+
+    .button--outlined:hover {
+        background-color: var(--colour--primary);
+        color: var(--colour--secondary);
+    }
+
+    .choice {
+        background-color: var(--colour--secondary);
+        color: var(--colour--primary);
+        padding: var(--spacing__60) var(--spacing__75);
+        border: var(--border__weight) solid var(--border__colour);
+        border-radius: var(--border__radius);
+        display: inline-block;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .choice--active {
+        background-color: var(--colour--primary);
+        color: var(--colour--secondary);
+        font-weight: var(--font__weight--medium);
+    }
+
+</style>

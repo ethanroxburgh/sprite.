@@ -12,9 +12,9 @@ function prepSpriteElement(encodedSvg: Uint8Array, name: string) {
     });
 }
 
-async function runExport(identifier: string) {
-    const flaggedNodes = identifier
-        ? figma.currentPage.findAll(node => node.name.includes(identifier))
+async function runExport(identifierKey: string) {
+    const flaggedNodes = identifierKey
+        ? figma.currentPage.findAll(node => node.name.includes(identifierKey))
         : figma.currentPage.selection;
 
     if (flaggedNodes.length === 0) {
@@ -34,7 +34,7 @@ async function runExport(identifier: string) {
 figma.ui.onmessage = msg => {
 
     if (msg.event === 'run-export') {
-        runExport(msg.identifier);
+        runExport(msg.identifierKey);
         return;
     }
 
