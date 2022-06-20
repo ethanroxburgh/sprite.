@@ -1,5 +1,5 @@
 figma.showUI(__html__, {
-    height: 420,
+    height: 440,
     width: 330
 });
 figma.skipInvisibleInstanceChildren = true;
@@ -18,7 +18,11 @@ async function runExport(identifierKey: string) {
         : figma.currentPage.selection;
 
     if (flaggedNodes.length === 0) {
-        return;
+        return figma.ui.postMessage({ event: 'error', message: 'Unable to find nodes'});
+    }
+
+    if (flaggedNodes.length >= 200) {
+        return figma.ui.postMessage({ event: 'error', message: 'Too many nodes. Max 200'});
     }
 
     await Promise.all(flaggedNodes.map(async (node) => {
@@ -27,7 +31,7 @@ async function runExport(identifierKey: string) {
         prepSpriteElement(encodedSvg, node.name);
     }));
 
-    figma.ui.postMessage({  event: 'send-sprite' });
+    figma.ui.postMessage({ event: 'send-sprite' });
 }
 
 

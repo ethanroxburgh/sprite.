@@ -1,6 +1,6 @@
 <div class="was-plugin layout--column layout--justify height--stretch">
     <div class="was-plugin__body height--stretch">
-        <div class="margin__bottom--100">
+        <div class="margin__bottom--125">
             <div class="form-label">Target Method</div>
             <div class="width--stretch layout--row layout--justify margin__bottom--25">
                 <button class="choice target-choice width--stretch margin__right--25" id="target-key" onclick="selectTargetMethod('target-key')">Key</button>
@@ -8,38 +8,102 @@
             </div>
             <input class="input key-input width--stretch" placeholder="e.g. <icons>" oninput="updateTargetKey(event)">
         </div>
-        <div class="margin__bottom--100">
+        <div class="margin__bottom--125">
             <div class="form-label">Icon Colour</div>
             <div class="width--stretch layout--row layout--justify margin__bottom--25">
                 <button class="choice colour-choice width--stretch margin__right--25" id="colour-inherit" onclick="selectColour('colour-inherit')">Inherit</button>
-                <button class="choice colour-choice width--stretch margin__right--25" id="colour-hex" onclick="selectColour('colour-hex')">Hex</button>
-                <button class="choice colour-choice width--stretch" id="colour-rgba" onclick="selectColour('colour-rgba')">Rgba</button>
+                <button class="choice colour-choice width--stretch margin__right--25" id="colour-custom" onclick="selectColour('colour-custom')">Custom</button>
             </div>
-            <input class="input hex-input width--stretch" placeholder="e.g. #333333" oninput="updateColour(event)">
-            <input class="input rgba-input width--stretch" placeholder="e.g. rgab(0, 0, 0, 0.5)" oninput="updateColour(event)">
+            <input class="input custom-input width--stretch" placeholder="e.g. #333333" oninput="updateColour(event)">
         </div>
 
         <div class="form-label">Exported SVG Element</div>
         <textarea placeholder="SVG string" class="textarea width--stretch" id="svg-text"></textarea>
     </div>
     <div class="was-plugin__footer">
-        <button class="button width--stretch" id="run">Run</button>
+        <div class="was-plugin__footer-body">
+            <div class="alert" id="alert">Message</div>
+            <button class="button width--stretch" id="run" onclick="initiateRun()">Run</button>
+        </div>
     </div>
 </div>
 
 <script>
 const textDecoder = new TextDecoder('utf-8');
 const domParser  = new DOMParser();
-const key = 'svg';
-const svgNodeElements = [];
+const colourInherit = 'currentcolor'
 
+const TARGET_METHOD = {
+    key: 'target-key',
+    selection: 'target-selection'
+};
+
+const COLOUR_METHOD = {
+    inherit: 'colour-inherit',
+    custom: 'colour-custom',
+};
+
+const ALERT_MESSAGES = {
+    [TARGET_METHOD.key]: 'Please provide a key',
+    [COLOUR_METHOD.custom]: 'Please provide a colour',
+}
+
+let targetMethod = TARGET_METHOD.key;
+let colourMethod = COLOUR_METHOD.inherit;
+
+let svgNodeElements = [];
 let identifierKey = '';
-let colour = 'currentcolor';
+let colour = colourInherit;
+let loading = false;
 
-const runButton = document.getElementById('run')
+const runButton = document.getElementById('run');
+const alertElement = document.getElementById('alert');
 
-runButton.onclick = () => {
+function validate() {
+    const validTarget = targetMethod !== TARGET_METHOD.key || !!identifierKey;
+    const validColour = colourMethod !== COLOUR_METHOD.custom || !!colour;
+    const invalid = !validTarget || !validColour;
+
+    return {
+        invalid,
+        target: validTarget,
+        colour: validColour
+    }
+}
+
+function showAlert(message) {
+    alertElement.innerHTML = message;
+    alertElement.classList.add('visibility--visible');
+
+    setTimeout(() => {
+        alertElement.classList.remove('visibility--visible');
+    }, 5000)
+}
+
+function initiateRun() {
+    svgNodeElements = [];
+
+    const {
+        target,
+        colour,
+        invalid
+    } = validate();
+
+    if (!!loading) {
+        return;
+    }
+
+    if (invalid) {
+        const message = !target
+            ? ALERT_MESSAGES[TARGET_METHOD.key]
+            : ALERT_MESSAGES[COLOUR_METHOD.custom];
+
+
+        return showAlert(message);
+    }
+
     runButton.innerHTML = 'Loading...';
+    loading = true;
     parent.postMessage({
         pluginMessage: {
             event: 'run-export',
@@ -49,59 +113,53 @@ runButton.onclick = () => {
     }, '*');
 }
 
-function updateTargetKey(event) {
+function updateTargetKey(event /* HTMLevent */) {
     identifierKey = event.srcElement.value;
 }
 
-function updateColour(event) {
+function updateColour(event  /* HTMLevent */) {
     colour = event.srcElement.value;
 }
 
-function selectTargetMethod(targetId) {
-    const choices = document.querySelectorAll('.target-choice');
-    const selectedElement = document.getElementById(`${targetId}`);
-    const keyInput = document.querySelector('.key-input');
+function selectChoice(choiceClass /* string */, choiceId /* string */) {
+    const choices = document.querySelectorAll(choiceClass);
+    const selectedElement = document.getElementById(choiceId);
 
     choices.forEach(choice => choice.classList.remove('choice--active'));
     selectedElement.classList.add('choice--active');
+}
 
-    targetId === 'target-key'
+function selectTargetMethod(targetId /* string */) {
+    const keyInput = document.querySelector('.key-input');
+
+    selectChoice('.target-choice', targetId)
+    targetMethod = targetId;
+
+    targetId === TARGET_METHOD.key
         ? keyInput.classList.add('visibility--visible')
         : keyInput.classList.remove('visibility--visible');
 }
 
-function selectColour(colourId) {
-    const choices = document.querySelectorAll('.colour-choice');
-    const selectedElement = document.getElementById(`${colourId}`);
-    const hexInput = document.querySelector('.hex-input');
-    const rgbaInput = document.querySelector('.rgba-input');
+function selectColour(colourId /* string */) {
+    const customInput = document.querySelector('.custom-input');
 
-    choices.forEach(choice => choice.classList.remove('choice--active'));
-    selectedElement.classList.add('choice--active');
+    selectChoice('.colour-choice', colourId);
+    colourMethod = colourId;
 
-    if (colourId === 'colour-hex') {
+    if (colourId === COLOUR_METHOD.custom) {
         colour = '';
-        rgbaInput.classList.remove('visibility--visible');
-        hexInput.classList.add('visibility--visible');
+        customInput.classList.add('visibility--visible');
         return;
     }
 
-    if (colourId === 'colour-rgba') {
-        colour = '';
-        hexInput.classList.remove('visibility--visible');
-        rgbaInput.classList.add('visibility--visible');
-        return;
-    }
-
-    colour = 'currentcolor';
-    rgbaInput.classList.remove('visibility--visible');
-    hexInput.classList.remove('visibility--visible');
+    colour = colourInherit;
+    customInput.classList.remove('visibility--visible');
 }
 
-function prepSpriteElement(encodedSvg, name) {
+function prepSpriteElement(encodedSvg /* unit8array */, name /* string */) {
     const decodedText = textDecoder.decode(encodedSvg).replace(/[\n\t]/g, "");
     const splitNode = decodedText.split('><');
-    const targetNodeIndex = splitNode.findIndex(item => item.includes(key));
+    const targetNodeIndex = splitNode.findIndex(item => item.includes('svg'));
 
     const filteredNode = [...splitNode].filter((item, index) =>
         index > targetNodeIndex
@@ -127,33 +185,37 @@ function prepSpriteElement(encodedSvg, name) {
     });
 
     const symbolName = name.replace(identifierKey, '').replace(' ', '');
+    console.log(filteredNode)
 
     svgNodeElements.push(`<symbol id="${symbolName}" viewBox="0 0 24 24">${filteredNode.join('')}</symbol>`);
 }
 
 function sendSprite() {
     const svgEl = document.getElementById('svg-text');
-
     const svg = [
         '<svg aria-hidden="true" style="position:absolute;width:0;height:0" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" overflow="hidden"><defs>',
         ...svgNodeElements,
         '</defs></svg>'
     ].join('');
 
-    // console.log(svgEl, svgEl.innerHTML, svg)
     setTimeout(() => {
-        console.log('run')
         svgEl.value = svgNodeElements.length === 0 ? 'Error' : svg;
+        loading = false;
         runButton.innerHTML = 'Run';
     }, 200);
-
 }
 
-selectTargetMethod('target-key');
-selectColour('colour-inherit');
+selectTargetMethod(targetMethod);
+selectColour(colourMethod);
 
 onmessage = ({ data }) => {
     const messageData = data.pluginMessage;
+
+    if (messageData.event === 'error') {
+        showAlert(messageData.message);
+        loading = false;
+        runButton.innerHTML = 'Run';
+    }
 
     if (messageData.event === 'prep-sprite-el') {
         prepSpriteElement(messageData.encodedSvg, messageData.name);
@@ -190,6 +252,7 @@ onmessage = ({ data }) => {
         --colour--primary: black;
         --colour--secondary: white;
         --colour--placeholder: #CCCCCC;
+        --colour--error: #e95858;
     }
 
     body,
@@ -203,12 +266,21 @@ onmessage = ({ data }) => {
         margin: 0;
     }
 
+
     .was-plugin__body,
-    .was-plugin__footer {
+    .was-plugin__footer-body {
         padding: var(--spacing__100);
     }
 
+    .was-plugin__body {
+        padding-bottom: 6.5rem;
+    }
+
     .was-plugin__footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background-color: var(--colour--secondary);
         border-top: var(--border__weight) solid var(--border__colour--light);
     }
 
@@ -243,10 +315,6 @@ onmessage = ({ data }) => {
         border-top: var(----border__weight) solid var(--colour--placeholder);
     }
 
-    .visibility--hidden {
-        display: none !important;
-    }
-
     .visibility--visible {
         display: block !important;
     }
@@ -259,8 +327,8 @@ onmessage = ({ data }) => {
         margin-bottom: var(--spacing__25);
     }
 
-    .margin__bottom--100 {
-        margin-bottom: var(--spacing__100);
+    .margin__bottom--125 {
+        margin-bottom: var(--spacing__125);
     }
 
     .input {
@@ -268,7 +336,12 @@ onmessage = ({ data }) => {
         padding: var(--spacing__60);
         border-radius: var(--border__radius);
         outline: none;
-        display: none
+        display: none;
+        font-size: 12px;
+    }
+
+    .input--invalid {
+        border-color: var(--colour--error);
     }
 
     .textarea {
@@ -288,7 +361,7 @@ onmessage = ({ data }) => {
 
     .form-label {
         font-weight: var(--fond__weight--heavy);
-        margin-bottom: var(--spacing__75);
+        margin-bottom: var(--spacing__60);
     }
 
     .button {
@@ -310,6 +383,17 @@ onmessage = ({ data }) => {
     .button--outlined:hover {
         background-color: var(--colour--primary);
         color: var(--colour--secondary);
+    }
+
+    .alert {
+        color: var(--colour--error);
+        /* padding: var(--spacing__60) var(--spacing__75); */
+        /* border-radius: var(--border__radius); */
+        margin-bottom: var(--spacing__60);
+        font-weight: var(--font__weight--medium);
+        /* background-color: var(--colour--error); */
+        text-align: center;
+        display: none;
     }
 
     .choice {
