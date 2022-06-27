@@ -2,23 +2,31 @@
     <div class="was-plugin__body height--stretch">
         <div class="margin__bottom--125">
             <div class="form-label">Target Method</div>
-            <div class="width--stretch layout--row layout--justify margin__bottom--25">
-                <button class="choice target-choice width--stretch margin__right--25" id="target-key" onclick="selectTargetMethod('target-key')">Key</button>
-                <button class="choice target-choice width--stretch" id="target-selection" onclick="selectTargetMethod('target-selection')">Selection</button>
+            <div class="form-container">
+                <div class="selector" id="target-selector" layout="layout--row layout--justify width--stretch">
+                    <div class="highlight target-highlight" style="left: 0px"></div>
+                    <div class="selector-item target-selector-item" id="target-key" onclick="selectTargetItem('target-key')">Key</div>
+                    <div class="selector-item target-selector-item" id="target-selection" onclick="selectTargetItem('target-selection')">Selection</div>
+                </div>
+                <input class="input margin__top--60 key-input width--stretch" id="key-input" placeholder="e.g. <icons>" oninput="updateTargetKey(event)">
             </div>
-            <input class="input key-input width--stretch" placeholder="e.g. <icons>" oninput="updateTargetKey(event)">
         </div>
         <div class="margin__bottom--125">
             <div class="form-label">Icon Colour</div>
-            <div class="width--stretch layout--row layout--justify margin__bottom--25">
-                <button class="choice colour-choice width--stretch margin__right--25" id="colour-inherit" onclick="selectColour('colour-inherit')">Inherit</button>
-                <button class="choice colour-choice width--stretch margin__right--25" id="colour-custom" onclick="selectColour('colour-custom')">Custom</button>
+            <div class="form-container">
+                <div class="selector" id="colour-selector" layout="layout--row layout--justify width--stretch">
+                    <div class="highlight colour-highlight" style="left: 0px"></div>
+                    <div class="selector-item colour-selector-item" id="colour-inherit" onclick="selectColourItem('colour-inherit')">Inherit</div>
+                    <div class="selector-item colour-selector-item" id="colour-custom" onclick="selectColourItem('colour-custom')">Custom</div>
+                </div>
+                <input class="input margin__top--60 custom-input width--stretch" id="custom-input" placeholder="e.g. #333333" oninput="updateColour(event)">
             </div>
-            <input class="input custom-input width--stretch" placeholder="e.g. #333333" oninput="updateColour(event)">
         </div>
 
         <div class="form-label">Exported SVG Element</div>
-        <textarea placeholder="SVG string" class="textarea width--stretch" id="svg-text"></textarea>
+        <div class="form-container">
+            <textarea placeholder="SVG string" class="textarea width--stretch" id="svg-text"></textarea>
+        </div>
     </div>
     <div class="was-plugin__footer">
         <div class="was-plugin__footer-body">
@@ -29,10 +37,6 @@
 </div>
 
 <script>
-const textDecoder = new TextDecoder('utf-8');
-const domParser  = new DOMParser();
-const colourInherit = 'currentcolor'
-
 const TARGET_METHOD = {
     key: 'target-key',
     selection: 'target-selection'
@@ -46,18 +50,40 @@ const COLOUR_METHOD = {
 const ALERT_MESSAGES = {
     [TARGET_METHOD.key]: 'Please provide a key',
     [COLOUR_METHOD.custom]: 'Please provide a colour',
+};
+
+const data = {
+    target: {
+        highlightClass: '.target-highlight',
+        selectorClass: '.target-selector-item',
+        selectorId: 'target-selector',
+        highlightEl: null,
+    },
+    colour: {
+        highlightClass: '.colour-highlight',
+        selectorClass: '.colour-selector-item',
+        selectorId: 'colour-selector',
+        highlightEl: null,
+    }
 }
+
+const textDecoder = new TextDecoder('utf-8');
+const domParser  = new DOMParser();
+const colourInherit = 'currentcolor'
 
 let targetMethod = TARGET_METHOD.key;
 let colourMethod = COLOUR_METHOD.inherit;
-
 let svgNodeElements = [];
 let identifierKey = '';
 let colour = colourInherit;
 let loading = false;
 
-const runButton = document.getElementById('run');
-const alertElement = document.getElementById('alert');
+function getElement(id /* string */) {
+    return document.getElementById(id);
+}
+
+const runButton = getElement('run');
+const alertElement = getElement('alert');
 
 function validate() {
     const validTarget = targetMethod !== TARGET_METHOD.key || !!identifierKey;
@@ -71,7 +97,7 @@ function validate() {
     }
 }
 
-function showAlert(message) {
+function showAlert(message /* string */) {
     alertElement.innerHTML = message;
     alertElement.classList.add('visibility--visible');
 
@@ -121,18 +147,9 @@ function updateColour(event  /* HTMLevent */) {
     colour = event.srcElement.value;
 }
 
-function selectChoice(choiceClass /* string */, choiceId /* string */) {
-    const choices = document.querySelectorAll(choiceClass);
-    const selectedElement = document.getElementById(choiceId);
-
-    choices.forEach(choice => choice.classList.remove('choice--active'));
-    selectedElement.classList.add('choice--active');
-}
-
 function selectTargetMethod(targetId /* string */) {
-    const keyInput = document.querySelector('.key-input');
-
-    selectChoice('.target-choice', targetId)
+    const keyInput = getElement('key-input');
+    identifierKey = '';
     targetMethod = targetId;
 
     targetId === TARGET_METHOD.key
@@ -141,9 +158,9 @@ function selectTargetMethod(targetId /* string */) {
 }
 
 function selectColour(colourId /* string */) {
-    const customInput = document.querySelector('.custom-input');
+    const customInput = getElement('custom-input');
 
-    selectChoice('.colour-choice', colourId);
+    // selectChoice('.colour-choice', colourId);
     colourMethod = colourId;
 
     if (colourId === COLOUR_METHOD.custom) {
@@ -185,13 +202,12 @@ function prepSpriteElement(encodedSvg /* unit8array */, name /* string */) {
     });
 
     const symbolName = name.replace(identifierKey, '').replace(' ', '');
-    console.log(filteredNode)
 
     svgNodeElements.push(`<symbol id="${symbolName}" viewBox="0 0 24 24">${filteredNode.join('')}</symbol>`);
 }
 
 function sendSprite() {
-    const svgEl = document.getElementById('svg-text');
+    const svgEl = getElement('svg-text');
     const svg = [
         '<svg aria-hidden="true" style="position:absolute;width:0;height:0" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" overflow="hidden"><defs>',
         ...svgNodeElements,
@@ -204,9 +220,6 @@ function sendSprite() {
         runButton.innerHTML = 'Run';
     }, 200);
 }
-
-selectTargetMethod(targetMethod);
-selectColour(colourMethod);
 
 onmessage = ({ data }) => {
     const messageData = data.pluginMessage;
@@ -225,6 +238,62 @@ onmessage = ({ data }) => {
         sendSprite();
     }
 }
+
+function addSelectorActiveClass(target) {
+    target.classList.add('selector-item--active');
+}
+
+function selectTargetItem(id /* string */) {
+    const target = document.getElementById(id);
+    const items = document.querySelectorAll('.target-selector-item');
+    const parent = getElement('target-selector');
+    const targetRect = target.getBoundingClientRect();
+    const parentRect = parent.getBoundingClientRect();
+
+    items.forEach(el => el.classList.remove('selector-item--active'));
+
+    data.target.highlightEl = document.querySelector('.target-highlight');
+    data.target.highlightEl.style.left = `${targetRect.left - parentRect.left}px`;
+
+    addSelectorActiveClass(target);
+    setHighlightWidth(target, 'target');
+    selectTargetMethod(id);
+}
+
+function selectColourItem(id /* string */) {
+    const target = document.getElementById(id);
+    const items = document.querySelectorAll('.colour-selector-item');
+    const parent = getElement('colour-selector');
+    const targetRect = target.getBoundingClientRect();
+    const parentRect = parent.getBoundingClientRect();
+
+    items.forEach(el => el.classList.remove('selector-item--active'));
+
+    data.colour.highlightEl = document.querySelector('.colour-highlight');
+    data.colour.highlightEl.style.left = `${targetRect.left - parentRect.left}px`;
+
+    addSelectorActiveClass(target);
+    setHighlightWidth(target, 'colour');
+    selectColour(id);
+}
+
+function setHighlightWidth(target = null, key) {
+    const selectorClass = data[key].selectorClass;
+    const highlightClass = data[key].highlightClass;
+
+    const itemTarget = target || document.querySelector(selectorClass);
+    const rect = itemTarget.getBoundingClientRect();
+
+    addSelectorActiveClass(itemTarget);
+
+    data[key].highlightEl.style.width = `${rect.width}px`;
+}
+
+setTimeout(() => {
+    selectTargetItem('target-key');
+    selectColourItem('colour-inherit');
+}, 200)
+
 
 </script>
 
@@ -258,8 +327,7 @@ onmessage = ({ data }) => {
     body,
     .input,
     .button,
-    .textarea,
-    .choice {
+    .textarea {
         font-family: var(--font__family);
         font-size: var(--font__size);
         font-weight: var(--font__weight);
@@ -325,6 +393,10 @@ onmessage = ({ data }) => {
 
     .margin__bottom--25 {
         margin-bottom: var(--spacing__25);
+    }
+
+    .margin__top--60 {
+        margin-top: var(--spacing__60);
     }
 
     .margin__bottom--125 {
@@ -396,21 +468,50 @@ onmessage = ({ data }) => {
         display: none;
     }
 
-    .choice {
-        background-color: var(--colour--secondary);
-        color: var(--colour--primary);
-        padding: var(--spacing__60) var(--spacing__75);
-        border: var(--border__weight) solid var(--border__colour);
-        border-radius: var(--border__radius);
-        display: inline-block;
-        outline: none;
-        cursor: pointer;
+    .form-container {
+        background-color: #F2F2F2;
+        padding: var(--spacing__60);
+        border-radius: 12px;
+        position: relative;
     }
 
-    .choice--active {
-        background-color: var(--colour--primary);
-        color: var(--colour--secondary);
-        font-weight: var(--font__weight--medium);
+    .selector {
+        /* padding: 0.25rem; */
+        width: 100%;
+        border-radius: 12px;
+        display: flex;
+        position: relative;
+    }
+
+    .selector-item {
+        white-space: nowrap;
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        z-index: 2;
+        text-align: center;
+        width: 100%;
+        user-select: none;
+        transition: color 0.2s ease;
+    }
+
+    .selector-item:not(.selector-item--active):hover {
+        color: black;
+    }
+
+    .selector-item--active {
+        color: white;
+    }
+
+    .highlight {
+        background-color: black;
+        border-radius: 8px;
+        position: absolute;
+        /* left: 0.25rem; */
+        width: 4.75rem;
+        height: 2.6rem;
+        z-index: 1;
+        transition: left 0.2s ease,
+                    width 0.2s ease;
     }
 
 </style>
