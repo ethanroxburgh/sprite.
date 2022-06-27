@@ -8,7 +8,7 @@
                     <div class="selector-item target-selector-item" id="target-key" onclick="selectTargetItem('target-key')">Key</div>
                     <div class="selector-item target-selector-item" id="target-selection" onclick="selectTargetItem('target-selection')">Selection</div>
                 </div>
-                <input class="input margin__top--60 key-input width--stretch" id="key-input" placeholder="e.g. <icons>" oninput="updateTargetKey(event)">
+                <input class="input margin__top--60 key-input width--stretch" id="key-input" placeholder="<sprite>" oninput="updateTargetKey(event)">
             </div>
         </div>
         <div class="margin__bottom--125">
@@ -19,7 +19,7 @@
                     <div class="selector-item colour-selector-item" id="colour-inherit" onclick="selectColourItem('colour-inherit')">Inherit</div>
                     <div class="selector-item colour-selector-item" id="colour-custom" onclick="selectColourItem('colour-custom')">Custom</div>
                 </div>
-                <input class="input margin__top--60 custom-input width--stretch" id="custom-input" placeholder="e.g. #333333" oninput="updateColour(event)">
+                <input class="input margin__top--60 custom-input width--stretch" id="custom-input" placeholder="#333333" oninput="updateColour(event)">
             </div>
         </div>
 
@@ -151,6 +151,7 @@ function selectTargetMethod(targetId /* string */) {
     const keyInput = getElement('key-input');
     identifierKey = '';
     targetMethod = targetId;
+    keyInput.value = identifierKey;
 
     targetId === TARGET_METHOD.key
         ? keyInput.classList.add('visibility--visible')
@@ -160,7 +161,6 @@ function selectTargetMethod(targetId /* string */) {
 function selectColour(colourId /* string */) {
     const customInput = getElement('custom-input');
 
-    // selectChoice('.colour-choice', colourId);
     colourMethod = colourId;
 
     if (colourId === COLOUR_METHOD.custom) {
@@ -292,7 +292,7 @@ function setHighlightWidth(target = null, key) {
 setTimeout(() => {
     selectTargetItem('target-key');
     selectColourItem('colour-inherit');
-}, 200)
+}, 0)
 
 
 </script>
@@ -308,12 +308,12 @@ setTimeout(() => {
         --fond__weight--heavy: 500;
 
         --spacing__25: 0.25rem;
-        --spacing__60: 0.6rem;
+        --spacing__60: 0.5rem;
         --spacing__75: 0.75rem;
         --spacing__100: 1rem;
         --spacing__125: 1.25rem;
 
-        --border__radius: 6px;
+        --border__radius: 8px;
         --border__weight: 1px;
         --border__colour: black;
         --border__colour--light: #E6E6E6;
@@ -405,7 +405,7 @@ setTimeout(() => {
 
     .input {
         border: var(--border__weight) solid var(--colour--primary);
-        padding: var(--spacing__60);
+        padding: 0.75rem;
         border-radius: var(--border__radius);
         outline: none;
         display: none;
@@ -417,8 +417,9 @@ setTimeout(() => {
     }
 
     .textarea {
-        height: 5.5rem;
-        max-height: 8rem;
+        height: 7rem;
+        max-height: 7rem;
+        min-height: 7rem;
         border: var(--border__weight) solid var(--colour--primary);
         border-radius: var(--border__radius);
         padding: var(--spacing__75);
@@ -439,11 +440,12 @@ setTimeout(() => {
     .button {
         background-color: var(--colour--primary);
         color: var(--colour--secondary);
-        padding: var(--spacing__60) var(--spacing__75);
+        padding: var(--spacing__75);
         border-radius: var(--border__radius);
         outline: none;
         border: none;
         cursor: pointer;
+        font-weight: 400;
     }
 
     .button--outlined {
@@ -499,6 +501,7 @@ setTimeout(() => {
     }
 
     .selector-item--active {
+        font-weight: 400;
         color: white;
     }
 

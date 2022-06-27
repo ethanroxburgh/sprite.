@@ -1,5 +1,5 @@
 figma.showUI(__html__, {
-    height: 460,
+    height: 575,
     width: 380
 });
 figma.skipInvisibleInstanceChildren = true;
