@@ -1,18 +1,30 @@
 {
-  "name": "want-a-sprite",
-  "version": "1.0.0",
-  "description": "Your Figma Plugin",
-  "main": "code.js",
+  "name": "vue-figma-plugin",
+  "private": true,
+  "version": "0.0.0",
   "scripts": {
-    "build": "tsc -p tsconfig.json"
-  },
-  "author": "",
-  "license": "",
-  "devDependencies": {
-    "@figma/plugin-typings": "^1.47.0",
-    "typescript": "*"
+    "dev": "vite",
+    "build": "npm run build:ui && npm run build:figma",
+    "build:figma": "esbuild src-figma/code.ts --bundle --outfile=dist/code.js",
+    "build:ui": "npx vite build --minify esbuild --emptyOutDir=false",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@types/node": "^17.0.42"
+    "@harlem/core": "^2.4.0-beta.3",
+    "@types/node": "^18.0.3",
+    "figma-plugin-ds": "^1.0.1",
+    "flex-layout-attribute": "^1.0.3",
+    "sass": "^1.53.0",
+    "vue": "^3.2.25"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.49.0",
+    "@harlem/plugin-devtools": "^2.4.0-beta.3",
+    "@vitejs/plugin-vue": "^2.3.3",
+    "esbuild": "^0.14.48",
+    "typescript": "^4.5.4",
+    "vite": "^2.9.9",
+    "vite-plugin-singlefile": "^0.10.0",
+    "vue-tsc": "^0.34.7"
   }
 }
