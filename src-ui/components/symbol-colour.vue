@@ -4,6 +4,7 @@
         <select id="layer-target-method" v-model="colourMethodValue" class="select-menu">
             <option :value.prop="COLOUR_METHOD_KEY.inherit" :key="COLOUR_METHOD_KEY.inherit">Inherit colour</option>
             <option :value.prop="COLOUR_METHOD_KEY.custom" :key="COLOUR_METHOD_KEY.custom">Custom colour</option>
+            <option :value.prop="COLOUR_METHOD_KEY.unset" :key="COLOUR_METHOD_KEY.unset">Unset</option>
         </select>
         <div class="input input--with-icon" v-if="isCustomColour">
             <div class="ml-xxsmall colour-picker">

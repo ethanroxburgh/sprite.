@@ -33,12 +33,15 @@ export default function prepSprite({ encodedSvg, elementName }: IPrepSpritePaylo
 
         const domEl = domParser.parseFromString(nodeString, "image/svg+xml").documentElement;
 
-        if (!!domEl.getAttribute('fill')) {
-            domEl.setAttribute('fill', colour);
-        }
+        if(colourMethod.value !== COLOUR_METHOD_KEY.unset) {
 
-        if (!!domEl.getAttribute('stroke')) {
-            domEl.setAttribute('stroke', colour);
+            if (!!domEl.getAttribute('fill')) {
+                domEl.setAttribute('fill', colour);
+            }
+
+            if (!!domEl.getAttribute('stroke')) {
+                domEl.setAttribute('stroke', colour);
+            }
         }
 
         return domEl.outerHTML;
