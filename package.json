@@ -15,11 +15,14 @@
     "figma-plugin-ds": "^1.0.1",
     "flex-layout-attribute": "^1.0.3",
     "sass": "^1.53.0",
-    "vue": "^3.2.25"
+    "svgo": "^2.8.0",
+    "vue": "^3.2.25",
+    "vue-router": "4"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.49.0",
     "@harlem/plugin-devtools": "^2.4.0-beta.3",
+    "@types/svgo": "^2.6.4",
     "@vitejs/plugin-vue": "^2.3.3",
     "esbuild": "^0.14.48",
     "typescript": "^4.5.4",

@@ -20,8 +20,12 @@ import postMessage from '../utilities/post-message';
 import eventEmitter from '../utilities/event-emitter';
 
 import {
-    ref
+    ref,
 } from 'vue';
+
+import {
+    useRouter
+} from 'vue-router';
 
 import {
     targetMethod,
@@ -35,9 +39,10 @@ type IError = {
     message: string;
 }
 
+const router = useRouter();
+
 const error = ref('');
 const loading = ref(false);
-const visualLoadComplete = ref(false);
 
 eventEmitter.on(EVENTS.completed, resolve);
 eventEmitter.on(EVENTS.error, showError);
@@ -70,6 +75,7 @@ function run() {
 
 function resolve() {
     loading.value = false;
+    router.push('/export')
 }
 
 </script>

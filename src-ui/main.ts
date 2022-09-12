@@ -1,14 +1,24 @@
-import { createApp } from 'vue'
 import App from './app.vue'
 import Harlem from '@harlem/core';
 
 import {
-    selectMenu
-    // @ts-ignore this makes me sad :(
-} from 'figma-plugin-ds';
+    createApp
+} from 'vue'
+
+import {
+    createRouter,
+    createWebHashHistory,
+} from 'vue-router';
+
+import routes from './routes/index';
+
+const router = createRouter({
+    history: createWebHashHistory(),
+    routes,
+});
 
 createApp(App)
     .use(Harlem)
+    .use(router)
     .mount('#app');
 
-selectMenu.init();

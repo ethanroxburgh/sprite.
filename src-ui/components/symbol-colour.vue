@@ -12,7 +12,7 @@
             </div>
             <input type="input" class="input__field" v-model="customColourValue" :disabled="!isCustomColour" placeholder="#333333">
         </div>
-       <div class="p-xxsmall pt-xxxsmall text--x-small text--grey" v-else>Will use "currentcolour"</div>
+       <div class="p-xxsmall pt-xxxsmall text--x-small text--grey" v-else-if="!isUnset">Will use "currentcolour"</div>
     </container>
 </template>
 
@@ -50,5 +50,6 @@ const customColourValue = computed(({
     }
 }));
 
-const isCustomColour = computed(() => colourMethodValue.value === COLOUR_METHOD_KEY.custom)
+const isCustomColour = computed(() => colourMethodValue.value === COLOUR_METHOD_KEY.custom);
+const isUnset = computed(() => colourMethodValue.value === COLOUR_METHOD_KEY.unset);
 </script>

@@ -4,18 +4,19 @@ import {
     colourMethod,
     customColour,
     targetKey,
-    updateSvgElements,
-} from '../store/index';
+    addSvgElementToResult,
+    dimensions
+} from '../store';
 
 const textDecoder = new TextDecoder('utf-8');
 const domParser = new DOMParser();
 
-type IPrepSpritePayload = {
+type IPrepSymbolPayload = {
     encodedSvg: Uint8Array;
     elementName: string;
 }
 
-export default function prepSprite({ encodedSvg, elementName }: IPrepSpritePayload) {
+export default function prepSymbol({ encodedSvg, elementName }: IPrepSymbolPayload) {
     const decodedText = textDecoder.decode(encodedSvg).replace(/[\n\t]/g, "");
     const splitNode = decodedText.split('><');
     const targetNodeIndex = splitNode.findIndex(item => item.includes('svg'));
@@ -50,5 +51,5 @@ export default function prepSprite({ encodedSvg, elementName }: IPrepSpritePaylo
     const key = targetKey.value || '';
     const symbolName = elementName.replace(key, '').replace(' ', '');
 
-    updateSvgElements(`<symbol id="${symbolName}" viewBox="0 0 24 24">${filteredNode.join('')}</symbol>`);
+    addSvgElementToResult(`<symbol id="${symbolName}" viewBox="0 0 ${dimensions.value.width} ${dimensions.value.height}">${filteredNode.join('')}</symbol>`);
 }

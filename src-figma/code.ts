@@ -1,5 +1,4 @@
-figma.showUI(__html__, { height: 500, width: 340 });
-
+figma.showUI(__html__, { height: 450, width: 260 });
 
 
 // Registered callbacks for Figma events
@@ -92,13 +91,13 @@ async function exportSvg(payload: IExportSvgPayload) {
     await Promise.all(flaggedNodes.map(async (node) => {
         const encodedSvg = await node.exportAsync({ format: 'SVG' });
 
-        postMessage('prep-sprite',{
+        postMessage('prep-symbol',{
             encodedSvg,
             elementName: node.name
         });
     }));
 
-    postMessage('show-svg-result');
+    postMessage('prep-result');
 }
 
 
