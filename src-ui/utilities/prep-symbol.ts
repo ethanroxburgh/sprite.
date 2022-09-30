@@ -28,7 +28,7 @@ export default function prepSymbol({ encodedSvg, elementName }: IPrepSymbolPaylo
     ).map(item => {
         const nodeString = `<${item}>`;
 
-        if (!nodeString.includes('<path') && !nodeString.includes('<rect')) {
+        if (!nodeString.includes('<path') && !nodeString.includes('<rect') && !nodeString.includes('<circle')) {
             return nodeString;
         }
 
