@@ -74,7 +74,7 @@ async function exportSvg(payload: IExportSvgPayload) {
 
     const flaggedNodes = useCurrentSelection
         ? figma.currentPage.selection
-        : figma.currentPage.findAll(node => node.name.includes(payload.targetKey!))
+        : figma.currentPage.findAll(node => node.name.includes(payload.targetKey!) && !!node.visible)
 
     if (flaggedNodes.length === 0) {
         return postMessage('error', {
